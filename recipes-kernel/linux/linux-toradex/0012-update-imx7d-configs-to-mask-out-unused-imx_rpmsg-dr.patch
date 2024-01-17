@@ -1,0 +1,26 @@
+From 9ffecfd2f9ab15155b7b222e58feca99751cd90d Mon Sep 17 00:00:00 2001
+From: Manikantan Ravichandran <mravichandran@witekio.com>
+Date: Tue, 9 Feb 2021 18:35:05 +0100
+Subject: [PATCH] update imx7d configs to mask out unused imx_rpmsg driver to
+ cortexM4
+
+---
+ arch/arm/mach-imx/Kconfig | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
+index 67b7c46778d3..3027b6e2da7b 100644
+--- a/arch/arm/mach-imx/Kconfig
++++ b/arch/arm/mach-imx/Kconfig
+@@ -575,8 +575,6 @@ config SOC_IMX7
+ 	select CPU_V7
+ 	select ARM_GIC
+ 	select HAVE_IMX_MU
+-	select HAVE_IMX_RPMSG
+-	select RPMSG
+ 
+ config SOC_IMX7D
+ 	bool "i.MX7 Dual support"
+-- 
+2.17.1
+

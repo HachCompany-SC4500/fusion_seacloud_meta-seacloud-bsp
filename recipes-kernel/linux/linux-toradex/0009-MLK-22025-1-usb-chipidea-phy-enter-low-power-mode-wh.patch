@@ -1,0 +1,114 @@
+From 37db491b94688cc7a6f835a9797e1c47c31bdfdd Mon Sep 17 00:00:00 2001
+From: Li Jun <jun.li@nxp.com>
+Date: Wed, 31 Jul 2019 14:36:58 +0800
+Subject: [PATCH] MLK-22025-1 usb: chipidea: phy enter low power mode when host
+ suspend
+
+On some imx host, if USB PHY is active when bus suspended, host may
+have problem on taking over resume signal of remote wakeup from usb
+device, resolve this by making PHY enter low power mode right after
+bus suspended.
+
+Acked-by: Peter Chen <peter.chen@nxp.com>
+Signed-off-by: Li Jun <jun.li@nxp.com>
+(cherry picked from commit 704c710f6d0267558c7443a7afbf63767b623947)
+---
+ drivers/usb/chipidea/bits.h  |  4 ++++
+ drivers/usb/chipidea/ci.h    |  2 ++
+ drivers/usb/chipidea/core.c  |  2 +-
+ drivers/usb/chipidea/host.c  | 12 +++++++++++-
+ include/linux/usb/chipidea.h |  2 ++
+ 5 files changed, 20 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/usb/chipidea/bits.h b/drivers/usb/chipidea/bits.h
+index e462f55..4572c47 100644
+--- a/drivers/usb/chipidea/bits.h
++++ b/drivers/usb/chipidea/bits.h
+@@ -73,6 +73,9 @@
+ #define PORTSC_FPR            BIT(6)
+ #define PORTSC_SUSP           BIT(7)
+ #define PORTSC_HSP            BIT(9)
++#define PORTSC_LS             (BIT(11) | BIT(10))
++#define PORTSC_LS_J           BIT(11)
++#define PORTSC_LS_K           BIT(10)
+ #define PORTSC_PP             BIT(12)
+ #define PORTSC_PTC            (0x0FUL << 16)
+ #define PORTSC_WKCN           BIT(20)
+@@ -81,6 +84,7 @@
+ #define PORTSC_PFSC           BIT(24)
+ #define PORTSC_PTS(d)						\
+ 	(u32)((((d) & 0x3) << 30) | (((d) & 0x4) ? BIT(25) : 0))
++#define PORT_SPEED_LOW(d)     ((((d) >> 26) & 0x3) == 1)
+ #define PORTSC_PTW            BIT(28)
+ #define PORTSC_STS            BIT(29)
+ 
+diff --git a/drivers/usb/chipidea/ci.h b/drivers/usb/chipidea/ci.h
+index fbd600e..6bc9df2 100644
+--- a/drivers/usb/chipidea/ci.h
++++ b/drivers/usb/chipidea/ci.h
+@@ -495,4 +495,6 @@ int hw_controller_reset(struct ci_hdrc *ci);
+ int dbg_create_files(struct ci_hdrc *ci);
+ 
+ void dbg_remove_files(struct ci_hdrc *ci);
++
++void ci_hdrc_enter_lpm(struct ci_hdrc *ci, bool enable);
+ #endif	/* __DRIVERS_USB_CHIPIDEA_CI_H */
+diff --git a/drivers/usb/chipidea/core.c b/drivers/usb/chipidea/core.c
+index 8623851..4ee176d 100644
+--- a/drivers/usb/chipidea/core.c
++++ b/drivers/usb/chipidea/core.c
+@@ -222,7 +222,7 @@ static void hw_wait_phy_stable(void)
+ }
+ 
+ /* The PHY enters/leaves low power mode */
+-static void ci_hdrc_enter_lpm(struct ci_hdrc *ci, bool enable)
++void ci_hdrc_enter_lpm(struct ci_hdrc *ci, bool enable)
+ {
+ 	enum ci_hw_regs reg = ci->hw_bank.lpm ? OP_DEVLC : OP_PORTSC;
+ 	bool lpm = !!(hw_read(ci, reg, PORTSC_PHCD(ci->hw_bank.lpm)));
+diff --git a/drivers/usb/chipidea/host.c b/drivers/usb/chipidea/host.c
+index 37367a3..72698c0 100644
+--- a/drivers/usb/chipidea/host.c
++++ b/drivers/usb/chipidea/host.c
+@@ -201,7 +201,7 @@ static int ci_imx_ehci_hub_control(
+ {
+ 	struct ehci_hcd	*ehci = hcd_to_ehci(hcd);
+ 	u32 __iomem	*status_reg;
+-	u32		temp;
++	u32		temp, suspend_line_state;
+ 	unsigned long	flags;
+ 	int		retval = 0;
+ 	struct device *dev = hcd->self.controller;
+@@ -230,6 +230,16 @@ static int ci_imx_ehci_hub_control(
+ 						PORT_SUSPEND, 5000))
+ 			ehci_err(ehci, "timeout waiting for SUSPEND\n");
+ 
++		if (ci->platdata->flags & CI_HDRC_HOST_SUSP_PHY_LPM) {
++			if (PORT_SPEED_LOW(temp))
++				suspend_line_state = PORTSC_LS_K;
++			else
++				suspend_line_state = PORTSC_LS_J;
++			if (!ehci_handshake(ehci, status_reg, PORTSC_LS,
++					   suspend_line_state, 5000))
++				ci_hdrc_enter_lpm(ci, true);
++		}
++
+ 		if (ci->platdata->flags & CI_HDRC_IMX_IS_HSIC) {
+ 			if (ci->platdata->notify_event)
+ 				ci->platdata->notify_event
+diff --git a/include/linux/usb/chipidea.h b/include/linux/usb/chipidea.h
+index f572e1e..fe79de7 100644
+--- a/include/linux/usb/chipidea.h
++++ b/include/linux/usb/chipidea.h
+@@ -66,6 +66,8 @@ struct ci_hdrc_platform_data {
+ #define CI_HDRC_PMQOS			BIT(16)
+ /* Using PHY's charger detection */
+ #define CI_HDRC_PHY_CHARGER_DETECTION	BIT(17)
++/* PHY enter low power mode when bus suspend */
++#define CI_HDRC_HOST_SUSP_PHY_LPM	BIT(18)
+ 	enum usb_dr_mode	dr_mode;
+ #define CI_HDRC_CONTROLLER_RESET_EVENT		0
+ #define CI_HDRC_CONTROLLER_STOPPED_EVENT	1
+-- 
+2.7.4
+

@@ -1,0 +1,14 @@
+BUILD_HOME = "/home/fusion"
+
+# The share state cache is shared between all Eagle builds
+SSTATE_DIR ?= "${BUILD_HOME}/yocto-caches/eagle/sstate"
+
+# For bamboo build, we keep DL_DIR in the projects folder to have the list of used download
+# The download directory is shared between all Eagle builds
+#DL_DIR ?= "${BUILD_HOME}/yocto-caches/eagle/downloads"
+
+# The download mirror location is shared between all Eagle builds
+SOURCE_MIRROR_URL ?= "file://${BUILD_HOME}/yocto-caches/eagle/downloads-mirror"
+
+# The node cache is shared between all builds"
+NODE_HOME_CACHE ?= "${BUILD_HOME}/yocto-caches/eagle/node-cache"

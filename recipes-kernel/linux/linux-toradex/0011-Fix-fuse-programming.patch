@@ -1,0 +1,99 @@
+From 4f04c97c157363e7cd6dd179634ff826f5bddef0 Mon Sep 17 00:00:00 2001
+From: Corentin Merlet <cmerlet@witekio.com>
+Date: Wed, 15 Sep 2021 16:50:04 +0200
+Subject: [PATCH] Fix fuse programming, file modified: drivers/char/fsl_otp.c
+   * prevents burning/programming of fuses already programmed, protecting the
+ persistent partition corruption & device bricking
+   * fixes fuses being un-readable after an echo "0" to the fuses, leading to
+ update failure
+
+---
+ drivers/char/fsl_otp.c | 43 ++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 39 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/char/fsl_otp.c b/drivers/char/fsl_otp.c
+index ebeb0fc0907d..aa7af6f2e7b2 100644
+--- a/drivers/char/fsl_otp.c
++++ b/drivers/char/fsl_otp.c
+@@ -418,10 +418,8 @@ static int otp_wait_busy(u32 flags)
+ 	return 0;
+ }
+ 
+-static ssize_t fsl_otp_show(struct kobject *kobj, struct kobj_attribute *attr,
+-			    char *buf)
++static int fsl_otp_read_fuse_word(unsigned int index, u32 *fuse_word)
+ {
+-	unsigned int index = attr - otp_kattr;
+ 	unsigned int phy_index;
+ 	u32 value = 0;
+ 	int ret;
+@@ -450,6 +448,7 @@ static ssize_t fsl_otp_show(struct kobject *kobj, struct kobj_attribute *attr,
+ 	}
+ 
+ 	value = __raw_readl(otp_base + HW_OCOTP_CUST_N(phy_index));
++	*fuse_word = value;
+ 
+ 	if (fsl_otp->devtype == FSL_OTP_MX7ULP) {
+ 		__raw_writel(1, otp_base + HW_OCOTP_PDN_ULP);
+@@ -458,7 +457,22 @@ static ssize_t fsl_otp_show(struct kobject *kobj, struct kobj_attribute *attr,
+ out:
+ 	mutex_unlock(&otp_mutex);
+ 	clk_disable_unprepare(otp_clk);
+-	return ret ? 0 : sprintf(buf, "0x%x\n", value);
++	return ret;
++}
++
++static ssize_t fsl_otp_show(struct kobject *kobj, struct kobj_attribute *attr,
++			    char *buf)
++{
++	unsigned int index = attr - otp_kattr;
++	unsigned int phy_index;
++	u32 value = 0;
++	int ret;
++
++	ret = fsl_otp_read_fuse_word(index, &value);
++	if (0 > ret)
++		return ret;
++
++	return sprintf(buf, "0x%x\n", value);
+ }
+ 
+ static int imx6_otp_write_bits(int addr, u32 data, u32 magic)
+@@ -556,6 +570,7 @@ static ssize_t fsl_otp_store(struct kobject *kobj, struct kobj_attribute *attr,
+ 	unsigned int phy_index;
+ 	unsigned long value;
+ 	unsigned long tmp;
++	u32 fuse_word_read = 0;
+ 	int ret;
+ 
+ 	if (!fsl_otp)
+@@ -565,6 +580,26 @@ static ssize_t fsl_otp_store(struct kobject *kobj, struct kobj_attribute *attr,
+ 	if (ret < 0)
+ 		return -EINVAL;
+ 
++	/*
++	 * gracefully handle writing fuse to initial state (all bit 0's)
++	 */
++	if (0 == value)
++		return count;
++
++	ret = fsl_otp_read_fuse_word(index , &fuse_word_read);
++	if (0 > ret)
++		return ret;
++
++	/*
++	 * Abort if one try to write to a general purpose fuse we use to store
++	 * encryption keys (GP10, GP11, GP20, GP21) that is already programmed.
++	 * Logical indexes of those fuses are 56, 57, 58 and 59 respectively.
++	 */
++	if (56 <= index && 59 >= index && 0 != fuse_word_read) {
++		printk(KERN_NOTICE "fuses already programmed, avoiding reprogramming");
++		return -ECANCELED;
++	}
++
+ 	ret = clk_prepare_enable(otp_clk);
+ 	if (ret)
+ 		return -ENODEV;
+-- 
+2.17.1
+

@@ -1,0 +1,43 @@
+From 430f8a14baf5e7ad9587cd1681152383f642b8ae Mon Sep 17 00:00:00 2001
+From: Stefan Agner <stefan.agner@toradex.com>
+Date: Mon, 19 Feb 2018 14:00:03 +0100
+Subject: [PATCH] ARM: dts: imx7: add alias for Ethernet controllers
+
+Add alias for Ethernet controllers. This allows code to determine
+id of controllers using of_alias_get_id.
+
+Signed-off-by: Stefan Agner <stefan.agner@toradex.com>
+Acked-by: Max Krummenacher <max.krummenacher@toradex.com>
+
+---
+ arch/arm/boot/dts/imx7d.dtsi | 4 ++++
+ arch/arm/boot/dts/imx7s.dtsi | 1 +
+ 2 files changed, 5 insertions(+)
+
+diff --git a/arch/arm/boot/dts/imx7d.dtsi b/arch/arm/boot/dts/imx7d.dtsi
+index d0fac185b738..28864598a04c 100644
+--- a/arch/arm/boot/dts/imx7d.dtsi
++++ b/arch/arm/boot/dts/imx7d.dtsi
+@@ -46,6 +46,10 @@
+ #include <dt-bindings/reset/imx7-reset.h>
+ 
+ / {
++	aliases {
++		ethernet1 = &fec2;
++	};
++
+ 	cpus {
+ 		cpu0: cpu@0 {
+ 			operating-points = <
+diff --git a/arch/arm/boot/dts/imx7s.dtsi b/arch/arm/boot/dts/imx7s.dtsi
+index 832ebf03b052..d42f45bf4c39 100644
+--- a/arch/arm/boot/dts/imx7s.dtsi
++++ b/arch/arm/boot/dts/imx7s.dtsi
+@@ -62,6 +62,7 @@
+ 	memory { device_type = "memory"; reg = <0 0>; };
+ 
+ 	aliases {
++		ethernet0 = &fec1;
+ 		gpio0 = &gpio1;
+ 		gpio1 = &gpio2;
+ 		gpio2 = &gpio3;

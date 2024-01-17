@@ -1,0 +1,60 @@
+From e69320166ff97c2cdf121c36f0822765b18cfb08 Mon Sep 17 00:00:00 2001
+From: Manikantan Ravichandran <mravichandran@witekio.com>
+Date: Thu, 21 Jan 2021 18:34:32 +0100
+Subject: [PATCH] add restart notifier hook to stop the watchdog during
+ restart/reboot/panic
+
+---
+ drivers/watchdog/rn5t618_wdt.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/drivers/watchdog/rn5t618_wdt.c b/drivers/watchdog/rn5t618_wdt.c
+index e60f55702ab7..90cefaf46a08 100644
+--- a/drivers/watchdog/rn5t618_wdt.c
++++ b/drivers/watchdog/rn5t618_wdt.c
+@@ -17,8 +17,10 @@
+ #include <linux/platform_device.h>
+ #include <linux/watchdog.h>
+ #include <linux/of.h>
++#include <linux/reboot.h>
+ 
+ #define DRIVER_NAME "rn5t618-wdt"
++#define RESTART_NOTIFIER_PRIORITY 255
+ 
+ static bool nowayout = WATCHDOG_NOWAYOUT;
+ static unsigned int timeout;
+@@ -131,6 +133,14 @@ static int rn5t618_wdt_ping(struct watchdog_device *wdt_dev)
+ 				  RN5T618_PWRIRQ_IR_WDOG, 0);
+ }
+ 
++int rn5t618_wdt_restart_handler(struct watchdog_device *wdt_dev, unsigned long action, void *data)
++{
++	if (rn5t618_wdt_stop(wdt_dev))
++		return NOTIFY_BAD;
++
++	return NOTIFY_DONE;
++}
++
+ static const struct watchdog_info rn5t618_wdt_info = {
+ 	.options	= WDIOF_SETTIMEOUT | WDIOF_MAGICCLOSE |
+ 			  WDIOF_KEEPALIVEPING,
+@@ -143,6 +153,7 @@ static const struct watchdog_ops rn5t618_wdt_ops = {
+ 	.stop           = rn5t618_wdt_stop,
+ 	.ping           = rn5t618_wdt_ping,
+ 	.set_timeout    = rn5t618_wdt_set_timeout,
++	.restart	= rn5t618_wdt_restart_handler,
+ };
+ 
+ static int rn5t618_wdt_probe(struct platform_device *pdev)
+@@ -170,6 +181,8 @@ static int rn5t618_wdt_probe(struct platform_device *pdev)
+ 	watchdog_init_timeout(&wdt->wdt_dev, timeout, &pdev->dev);
+ 	watchdog_set_nowayout(&wdt->wdt_dev, nowayout);
+ 
++	watchdog_set_restart_priority(&wdt->wdt_dev, RESTART_NOTIFIER_PRIORITY);
++	watchdog_stop_on_reboot(&wdt->wdt_dev);
+ 	platform_set_drvdata(pdev, wdt);
+ 
+ 	return watchdog_register_device(&wdt->wdt_dev);
+-- 
+2.17.1
+

@@ -1,0 +1,36 @@
+From c0fd63545bcf73b0454e8a266feee4ef59c55cc5 Mon Sep 17 00:00:00 2001
+From: Guillaume Deroire <guillaume.deroire@hach.com>
+Date: Mon, 3 Aug 2020 17:30:50 +0200
+Subject: [PATCH] Add detailed logs of the low level touchscreen frames
+
+---
+ drivers/input/touchscreen/Makefile       | 2 ++
+ drivers/input/touchscreen/cyttsp5_core.c | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/drivers/input/touchscreen/Makefile b/drivers/input/touchscreen/Makefile
+index 86d37d2..faf5efb 100644
+--- a/drivers/input/touchscreen/Makefile
++++ b/drivers/input/touchscreen/Makefile
+@@ -22,6 +22,8 @@ obj-$(CONFIG_TOUCHSCREEN_BU21013)	+= bu21013_ts.o
+ obj-$(CONFIG_TOUCHSCREEN_CHIPONE_ICN8318)	+= chipone_icn8318.o
+ obj-$(CONFIG_TOUCHSCREEN_CT36X_WLD)	+= vtl/
+ obj-$(CONFIG_TOUCHSCREEN_CY8CTMG110)	+= cy8ctmg110_ts.o
++ccflags-$(CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5)	+= -DVERBOSE_DEBUG
++ccflags-y	+= ${ccflags-m}
+ obj-$(CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5)	+= cyttsp5.o
+ cyttsp5-y := cyttsp5_core.o cyttsp5_mt_common.o
+ cyttsp5-$(CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_MT_A) += cyttsp5_mta.o
+diff --git a/drivers/input/touchscreen/cyttsp5_core.c b/drivers/input/touchscreen/cyttsp5_core.c
+index 4cc8b19..ad247928 100644
+--- a/drivers/input/touchscreen/cyttsp5_core.c
++++ b/drivers/input/touchscreen/cyttsp5_core.c
+@@ -3947,6 +3947,8 @@ static int cyttsp5_parse_input(struct cyttsp5_core_data *cd)
+ 	parade_debug(cd->dev, DEBUG_LEVEL_2, "%s: report_id:%X\n",
+ 		__func__, report_id);
+ 
++	cyttsp5_pr_buf(cd->dev, (u8 *)cd->input_buf, size, "input_buf");
++
+ 	/* Check wake-up report */
+ 	if (report_id == HID_WAKEUP_REPORT_ID) {
+ 		cyttsp5_wakeup_host(cd);

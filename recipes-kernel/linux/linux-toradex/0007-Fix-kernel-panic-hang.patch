@@ -1,0 +1,55 @@
+From cc916c60d0c5b768f6c79c87a58e03479215073e Mon Sep 17 00:00:00 2001
+From: Dragan Cecavac <dcecavac@witekio.com>
+Date: Tue, 12 May 2020 16:17:15 +0200
+Subject: [PATCH] Fix kernel panic hang
+
+In the case of Eagle device, the kernel hang in case of kernel panic
+when calling regmap_update_bits() from function rn5t618_trigger_poweroff_sequence()
+in the file drivers/mfd/rn5t618.c This appears to be an I2C related hang,
+but no other root cause has been isolated.
+Another observation has been that elimination of crash_smp_send_stop()
+call from functions panic() and machine_restart() will result in the
+hang not occurring.
+This solution does not modify machine_restart() function. Instead
+only it's core component do_kernel_restart() is called.
+
+There has been another attempted approach where switching to the
+reboot CPU by using the function migrate_to_reboot_cpu() has been tried.
+This solution however worked in most cases, but would still occasionally
+hang under intensive testing.
+
+Signed-off-by: Dragan Cecavac <dcecavac@witekio.com>
+---
+ kernel/panic.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
+
+diff --git a/kernel/panic.c b/kernel/panic.c
+index 32ff6fd..e927fa2 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -193,13 +193,6 @@ void panic(const char *fmt, ...)
+ 	if (!_crash_kexec_post_notifiers) {
+ 		printk_safe_flush_on_panic();
+ 		__crash_kexec(NULL);
+-
+-		/*
+-		 * Note smp_send_stop is the usual smp shutdown function, which
+-		 * unfortunately means it may not be hardened to work in a
+-		 * panic situation.
+-		 */
+-		smp_send_stop();
+ 	} else {
+ 		/*
+ 		 * If we want to do crash dump after notifier calls and
+@@ -272,7 +265,7 @@ void panic(const char *fmt, ...)
+ 		 * shutting down.  But if there is a chance of
+ 		 * rebooting the system it will be rebooted.
+ 		 */
+-		emergency_restart();
++		do_kernel_restart(NULL);
+ 	}
+ #ifdef __sparc__
+ 	{
+-- 
+2.7.4
+

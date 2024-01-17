@@ -1,0 +1,51 @@
+From 5a5df4eb7e516749946daf4f124d8da233993711 Mon Sep 17 00:00:00 2001
+From: Li Jun <jun.li@nxp.com>
+Date: Wed, 31 Jul 2019 15:36:33 +0800
+Subject: [PATCH] MLK-22025-3 usb: chipidea: enter lpm when imx7d host suspend
+
+This is the only platform we found has this remote wakeup issue,
+so enable CI_HDRC_HOST_SUSP_PHY_LPM for it.
+
+Acked-by: Peter Chen <peter.chen@nxp.com>
+Signed-off-by: Li Jun <jun.li@nxp.com>
+(cherry picked from commit d25645efb8164ef3b3961ecc1d2e81b0e000fade)
+---
+ drivers/usb/chipidea/ci_hdrc_imx.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/usb/chipidea/ci_hdrc_imx.c b/drivers/usb/chipidea/ci_hdrc_imx.c
+index 483e89c..842e3cfd 100644
+--- a/drivers/usb/chipidea/ci_hdrc_imx.c
++++ b/drivers/usb/chipidea/ci_hdrc_imx.c
+@@ -80,7 +80,8 @@ static const struct ci_hdrc_imx_platform_flag imx6ul_usb_data = {
+ };
+ 
+ static const struct ci_hdrc_imx_platform_flag imx7d_usb_data = {
+-	.flags = CI_HDRC_SUPPORTS_RUNTIME_PM,
++	.flags = CI_HDRC_SUPPORTS_RUNTIME_PM |
++		CI_HDRC_HOST_SUSP_PHY_LPM,
+ };
+ 
+ static const struct ci_hdrc_imx_platform_flag imx7ulp_usb_data = {
+@@ -93,6 +94,10 @@ static const struct ci_hdrc_imx_platform_flag imx8qm_usb_data = {
+ 	.flags = CI_HDRC_SUPPORTS_RUNTIME_PM,
+ };
+ 
++static const struct ci_hdrc_imx_platform_flag imx8mm_usb_data = {
++	.flags = CI_HDRC_SUPPORTS_RUNTIME_PM,
++};
++
+ static const struct of_device_id ci_hdrc_imx_dt_ids[] = {
+ 	{ .compatible = "fsl,imx23-usb", .data = &imx23_usb_data},
+ 	{ .compatible = "fsl,imx28-usb", .data = &imx28_usb_data},
+@@ -104,6 +109,7 @@ static const struct of_device_id ci_hdrc_imx_dt_ids[] = {
+ 	{ .compatible = "fsl,imx7d-usb", .data = &imx7d_usb_data},
+ 	{ .compatible = "fsl,imx7ulp-usb", .data = &imx7ulp_usb_data},
+ 	{ .compatible = "fsl,imx8qm-usb", .data = &imx8qm_usb_data},
++	{ .compatible = "fsl,imx8mm-usb", .data = &imx8mm_usb_data},
+ 	{ /* sentinel */ }
+ };
+ MODULE_DEVICE_TABLE(of, ci_hdrc_imx_dt_ids);
+-- 
+2.7.4
+

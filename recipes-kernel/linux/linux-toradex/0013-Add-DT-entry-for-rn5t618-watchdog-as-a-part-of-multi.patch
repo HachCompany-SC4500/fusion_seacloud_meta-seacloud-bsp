@@ -1,0 +1,75 @@
+From 2dda4b6784629d476a6b3fd273f93a1e0a59f70a Mon Sep 17 00:00:00 2001
+From: Manikantan Ravichandran <ravman1991@gmail.com>
+Date: Tue, 9 Mar 2021 11:37:41 +0100
+Subject: [PATCH] Add DT entry for rn5t618 watchdog as a part of multifunction
+ device
+
+Signed-off-by: Manikantan Ravichandran <ravman1991@gmail.com>
+---
+ arch/arm/boot/dts/imx7-colibri.dtsi | 4 ++++
+ drivers/mfd/rn5t618.c               | 2 +-
+ drivers/watchdog/rn5t618_wdt.c      | 8 ++++++++
+ 3 files changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/imx7-colibri.dtsi b/arch/arm/boot/dts/imx7-colibri.dtsi
+index a80d359298a6..7d328c88389c 100644
+--- a/arch/arm/boot/dts/imx7-colibri.dtsi
++++ b/arch/arm/boot/dts/imx7-colibri.dtsi
+@@ -263,6 +263,10 @@
+ 				regulator-always-on;
+ 			};
+ 		};
++
++		rn5t618_wdt:rn5t618_wdt {
++			compatible = "ricoh,rn5t618-wdt";
++		};
+ 	};
+ };
+ 
+diff --git a/drivers/mfd/rn5t618.c b/drivers/mfd/rn5t618.c
+index f4037d42a60f..85dd826db328 100644
+--- a/drivers/mfd/rn5t618.c
++++ b/drivers/mfd/rn5t618.c
+@@ -23,7 +23,7 @@
+ 
+ static const struct mfd_cell rn5t618_cells[] = {
+ 	{ .name = "rn5t618-regulator" },
+-	{ .name = "rn5t618-wdt" },
++	{ .name = "rn5t618-wdt", .of_compatible = "ricoh,rn5t618-wdt" },
+ };
+ 
+ static bool rn5t618_volatile_reg(struct device *dev, unsigned int reg)
+diff --git a/drivers/watchdog/rn5t618_wdt.c b/drivers/watchdog/rn5t618_wdt.c
+index 90cefaf46a08..5fbb296c2f40 100644
+--- a/drivers/watchdog/rn5t618_wdt.c
++++ b/drivers/watchdog/rn5t618_wdt.c
+@@ -16,6 +16,7 @@
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+ #include <linux/watchdog.h>
++#include <linux/of.h>
+ 
+ #define DRIVER_NAME "rn5t618-wdt"
+ 
+@@ -183,11 +184,18 @@ static int rn5t618_wdt_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++
++static const struct of_device_id rn5t618_of_match_table[] = {
++	{.compatible = "ricoh,rn5t618-wdt"},
++	{ },
++};
++
+ static struct platform_driver rn5t618_wdt_driver = {
+ 	.probe = rn5t618_wdt_probe,
+ 	.remove = rn5t618_wdt_remove,
+ 	.driver = {
+ 		.name	= DRIVER_NAME,
++		.of_match_table = of_match_ptr(rn5t618_of_match_table),
+ 	},
+ };
+ 
+-- 
+2.17.1
+
