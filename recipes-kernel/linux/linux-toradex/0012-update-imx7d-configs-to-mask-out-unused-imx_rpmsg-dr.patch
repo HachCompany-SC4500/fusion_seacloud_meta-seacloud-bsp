@@ -1,5 +1,5 @@
 From 9ffecfd2f9ab15155b7b222e58feca99751cd90d Mon Sep 17 00:00:00 2001
-From: Manikantan Ravichandran <mravichandran@witekio.com>
+From: Manikantan Ravichandran <mravichandran>
 Date: Tue, 9 Feb 2021 18:35:05 +0100
 Subject: [PATCH] update imx7d configs to mask out unused imx_rpmsg driver to
  cortexM4

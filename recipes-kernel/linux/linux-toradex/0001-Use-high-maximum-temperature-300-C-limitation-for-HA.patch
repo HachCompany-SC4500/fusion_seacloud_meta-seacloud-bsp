@@ -1,5 +1,5 @@
 From ba39a7bb3f215e06dc40c4784cf8dd2e27630483 Mon Sep 17 00:00:00 2001
-From: Guillaume Deroire <guillaume.deroire@hach.com>
+From: Guillaume Deroire <guillaume.deroire@>
 Date: Tue, 9 Jul 2019 14:06:00 +0200
 Subject: [PATCH] =?UTF-8?q?Use=20high=20maximum=20temperature=20(300=C2=B0?=
  =?UTF-8?q?C)=20limitation=20for=20HALT=20test?=

@@ -1,5 +1,5 @@
 From 4f04c97c157363e7cd6dd179634ff826f5bddef0 Mon Sep 17 00:00:00 2001
-From: Corentin Merlet <cmerlet@witekio.com>
+From: Corentin Merlet <cmerlet>
 Date: Wed, 15 Sep 2021 16:50:04 +0200
 Subject: [PATCH] Fix fuse programming, file modified: drivers/char/fsl_otp.c
    * prevents burning/programming of fuses already programmed, protecting the

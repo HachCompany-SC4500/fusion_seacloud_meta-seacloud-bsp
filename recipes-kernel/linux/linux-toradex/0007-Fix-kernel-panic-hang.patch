@@ -1,5 +1,5 @@
 From cc916c60d0c5b768f6c79c87a58e03479215073e Mon Sep 17 00:00:00 2001
-From: Dragan Cecavac <dcecavac@witekio.com>
+From: Dragan Cecavac <dcecavac>
 Date: Tue, 12 May 2020 16:17:15 +0200
 Subject: [PATCH] Fix kernel panic hang
 
@@ -18,7 +18,7 @@ reboot CPU by using the function migrate_to_reboot_cpu() has been tried.
 This solution however worked in most cases, but would still occasionally
 hang under intensive testing.
 
-Signed-off-by: Dragan Cecavac <dcecavac@witekio.com>
+Signed-off-by: Dragan Cecavac <dcecavac>
 ---
  kernel/panic.c | 9 +--------
  1 file changed, 1 insertion(+), 8 deletions(-)

@@ -1,5 +1,5 @@
 From b3a50c1f22f75916ac40eccc11330a074df4df3c Mon Sep 17 00:00:00 2001
-From: Dragan Cecavac <dcecavac@witekio.com>
+From: Dragan Cecavac <dcecavac>
 Date: Fri, 29 Nov 2019 16:11:32 +0100
 Subject: [PATCH] Revert "block: Unexport elv_register_queue() and
  elv_unregister_queue()"

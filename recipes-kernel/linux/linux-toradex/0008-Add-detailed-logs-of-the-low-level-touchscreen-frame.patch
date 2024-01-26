@@ -1,5 +1,5 @@
 From c0fd63545bcf73b0454e8a266feee4ef59c55cc5 Mon Sep 17 00:00:00 2001
-From: Guillaume Deroire <guillaume.deroire@hach.com>
+From: Guillaume Deroire <guillaume.deroire@>
 Date: Mon, 3 Aug 2020 17:30:50 +0200
 Subject: [PATCH] Add detailed logs of the low level touchscreen frames
 

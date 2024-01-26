@@ -1,5 +1,5 @@
 From b9c60f11091f81a7a4d5a0a26b6fbb9fa81a778f Mon Sep 17 00:00:00 2001
-From: Dragan Cecavac <dcecavac@witekio.com>
+From: Dragan Cecavac <dcecavac>
 Date: Tue, 25 Feb 2020 16:05:03 +0100
 Subject: [PATCH] crypto/caam: add backlogging support
 
@@ -23,7 +23,7 @@ one.
 Based on: https://patchwork.kernel.org/patch/7230241/
 
 Signed-off-by: Alex Porosanu <alexandru.porosanu@freescale.com>
-Signed-off-by: Dragan Cecavac <dcecavac@witekio.com>
+Signed-off-by: Dragan Cecavac <dcecavac>
 ---
  drivers/crypto/caam/caamalg.c  |  97 +++++++++++++++++---
  drivers/crypto/caam/caamhash.c | 101 ++++++++++++++++++---

@@ -1,5 +1,5 @@
 From e69320166ff97c2cdf121c36f0822765b18cfb08 Mon Sep 17 00:00:00 2001
-From: Manikantan Ravichandran <mravichandran@witekio.com>
+From: Manikantan Ravichandran <mravichandran>
 Date: Thu, 21 Jan 2021 18:34:32 +0100
 Subject: [PATCH] add restart notifier hook to stop the watchdog during
  restart/reboot/panic
