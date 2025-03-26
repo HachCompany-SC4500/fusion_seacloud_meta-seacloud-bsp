@@ -13,7 +13,7 @@ SRC_URI += "\
 "
 
 # To be used for master
-SRCREV = "eee3c0d68f228e28010a6a722c48f491ae7469f9"
+SRCREV = "ddf0436079a9b8f90105be8eea22239a5adddd48"
 SRCBRANCH="github_publication_SC4500"
 
 # To be use during development to follow automatically new commits
