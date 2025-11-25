@@ -10,7 +10,7 @@ SRC_URI_remove = "git://git.toradex.com/u-boot-toradex.git;protocol=https;branch
 SRC_URI_prepend = "git://github.com/HachCompany-SC4500/fusion_seacloud_u-boot.git;branch=${SRCBRANCH} "
 
 # Revision to be used for current branch
-SRCREV = "ebd5bd48b1da26991eece8b89f59eccb625a58ac"
+SRCREV = "fc233339ad400cf22ef1bf7366ef4ba89883387d"
 SRCBRANCH="github_publication_SC4500"
 
 # Use AUTOREV only during development to follow automatically new commits on a branch
