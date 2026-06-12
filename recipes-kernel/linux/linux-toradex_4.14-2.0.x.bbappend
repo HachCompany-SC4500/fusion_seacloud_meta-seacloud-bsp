@@ -29,7 +29,7 @@ SRC_URI += "\
 "
 
 # Revision to be used for current branch
-SRCREV = "b0ea214693948b701f5aa622f773fb54c8eecf2e"
+SRCREV = "a7e9e1bf92e76eaf98fe7bc7bff59f81d5fd2c60"
 SRCBRANCH="github_publication_SC4500"
 
 # Use AUTOREV only during development to follow automatically new commits on a branch
